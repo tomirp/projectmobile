@@ -1,56 +1,87 @@
-import React, { Component } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, {Component} from 'react';
+import {StyleSheet, View} from 'react-native';
 
-import PlaceInput from "./src/components/PlaceInput/PlaceInput";
-import ListItem from "./src/components/ListItem/ListItem";
+import PlaceInput from './src/components/PlaceInput/PlaceInput';
+import PlaceList from './src/components/PlaceList/PlaceList';
+import PlaceDetail from './src/components/PlaceDetail/PlaceDetail'
 
-export default class App extends Component {
+export default class App extends Component{
   state = {
-    places: []
-  };
+    places: [],
+    selectedPlace: null
+  }
 
-  placeSubmitHandler = (placeName) => { //Data baru masuk
-    if(placeName.trim() === ""){ //trim memotong spasi 
-      return //berhenti
+  placeSubmitHandler = placeName => {
+    if(placeName.trim() === ""){ // "   Alvin    " "Alvin" || "      " ""
+      return // berhenti
     }
 
-    //setState diberikan function, property yang masuk adalah data state sebelumnya
-    this.setState((prevState) => { //variable previous state || Data lama
+    // setState diberikan function, property yg masuk adalah data state sebelumnya
+    this.setState(prevState => {
       return {
-        places: prevState.places.concat(placeName)
+        places: prevState.places.concat({
+          key: Math.random().toString(),
+          value: placeName,
+          image: {
+            uri: 'https://res.cloudinary.com/teepublic/image/private/s--ZuSXviSZ--/t_Preview/b_rgb:191919,c_limit,f_jpg,h_630,q_90,w_630/v1519368586/production/designs/2388108_0.jpg'
+          }
+        })
       }
     })
-  };
+  }
+
+  placeSelectedHandler = (key) => {
+    this.setState (prevState => {
+      return {
+        selectedPlace: prevState.places.find(place => {
+            return place.key === key
+        })
+      }
+    })
+  }
+
+  placeDeletedHandler = () => {
+    this.setState(prevState => {
+      return{
+        places: prevState.places.filter(place => {
+            return place.key !== prevState.selectedPlace.key
+        }),
+        selectedPlace: null
+      }
+    })
+  }
+
+  modalCloseHandler = () => {
+    this.setState({
+      selectedPlace: null
+    })
+  }
+
 
   render() {
-    const outputList = this.state.places.map(place => {
-      return <ListItem placeName = {place}/>
-    }) 
-
     return (
       <View style={styles.container}>
+        <PlaceDetail
+          modalClosed = {this.modalCloseHandler}
+          onDeletedItem = {this.placeDeletedHandler}
+          selectedPlace = {this.state.selectedPlace}
+        />
         <PlaceInput onSubmitHandler = {this.placeSubmitHandler}/>
-        <View>{outputList}</View>
+        <PlaceList 
+          places = {this.state.places}
+          onItemSelected = {this.placeSelectedHandler}
+        />
       </View>
     )
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5FCFF"
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: "center",
-    margin: 10
-  },
-  instructions: {
-    textAlign: "center",
-    color: "#333333",
-    marginBottom: 5
-  }
-});
+    container: {
+      flex:1,
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      padding: 26
+    }
+})
